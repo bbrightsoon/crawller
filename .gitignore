@@ -1,0 +1,6 @@
+# eclipse setting files
+.project
+.settings/
+
+lib/
+bin/
