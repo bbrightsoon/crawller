@@ -7,15 +7,11 @@ import twitter4j.conf.*;
 import twitter4j.Query.*;
 
 public class Crawler {
-	private InsertDB iDB = new InsertDB();
-	
-	public void Crawler() {
-		iDB.setDB("SNS_Sensitive_Analysis");
-		iDB.setCol("SNSData");
-	}
+	private AccessDB ADB = new AccessDB();
+	private SpammerChecker SC = new SpammerChecker();
 	
 	public void printDB() {
-		iDB.printTwitterText();
+		ADB.printTwitterText();
 	}
 	
 	private void printCrawl(Status status) {
@@ -28,6 +24,8 @@ public class Crawler {
 		status.getUser().getFollowersCount()); // ÆÈ·Î¿ö
 		System.out.println("Friend: " +
 		status.getUser().getFriendsCount()); // ÆÈ·ÎÀ×
+		System.out.println("Description: " +
+		status.getUser().getDescription());
 		System.out.println("==================================");
 	}
 	
@@ -64,9 +62,14 @@ public class Crawler {
 
 				@Override
 				public void onStatus(Status status) {
-//					printCrawl(status);	// Test output
-					
-					iDB.insertTwitterText(status);
+					if (SC.testTwitterText(status) == 1) {
+						ADB.insertTwitterText(status);	
+					} else if (SC.testTwitterText(status) == 0) {
+						// XXX
+						ADB.addBlackListUser(status);
+						ADB.insertTwitterText(status);
+					} else {}
+					printCrawl(status);
 				}
 
 				@Override

@@ -5,13 +5,49 @@ import twitter4j.auth.AccessToken;
 import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
 
+import java.util.regex.*;
+
 public class SpammerChecker {
 	
 	// If return 1, not spammer. If return 0, can be spammer.
 	// If return -1, spammer.
 	public int testTwitterText(Status status) {
-		return 0;
+		if (status.getUser().getName().contains("º¿") == true) {
+			return -1;
+		}
+		if (status.getUser().getName().contains("bot") == true) {
+			return -1;
+		}
+		AccessDB ADB = new AccessDB();
+		if (ADB.getBlackListCount(status) >= 5) {
+			// spammer
+			return -1;
+		} 
+		if (ADB.getSpamWordCount(status) >= 2) {
+			return 0;
+		}
+		if (getNewLineCount(status) >= 10) {
+			return 0;
+		}
+		
+		return 1;
 	}
+	
+	private int getNewLineCount(Status status) {
+		char b = '\n';
+		String str = status.getText();
+		int length = str.length();
+		int count = 0;
+		
+		for (int i = 0; i < length; i++) {
+			if (str.charAt(i) == b) {
+				count++;
+			}
+		}
+		
+		return count;	
+	}
+	
 	
 	public double getRS(Status status) {
 		// RS calculating function
