@@ -5,17 +5,35 @@ import twitter4j.auth.AccessToken;
 import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
 
+import java.util.Date;
 import java.util.regex.*;
 
 public class SpammerChecker {
+	private int twitCnt = 0;
+	private double ratioAv = 0;
+	private double rsRatio = 0;
+	private double hashAv = 0.05;
+	private double urlAv = 0.08;
 	
 	// If return 1, not spammer. If return 0, can be spammer.
-	// If return -1, spammer.
+	// If return -1, ignore(bot or useless text).
 	public int testTwitterText(Status status) {
+		//getFRR(status);
+		double contentScore = 0;
+		double behaviorScore = 0;
 		if (status.getUser().getName().contains("º¿") == true) {
 			return -1;
 		}
 		if (status.getUser().getName().contains("bot") == true) {
+			return -1;
+		}
+		if (status.getText().length() <= 20) {
+			return -1;
+		}
+		if (isCreatedInADay(status) == true) {
+			return -1;
+		}
+		if (status.getUser().getStatusesCount() <= 50) {
 			return -1;
 		}
 		AccessDB ADB = new AccessDB();
@@ -23,34 +41,63 @@ public class SpammerChecker {
 			// spammer
 			return -1;
 		} 
-		if (ADB.getSpamWordCount(status) >= 2) {
-			return 0;
+		if (getRS(status) <= 0.01) {
+			contentScore += 0.1;
 		}
-		if (getNewLineCount(status) >= 10) {
-			return 0;
+		if (getSpecialCharacterRatio(status.getUser().getDescription()) >= 0.3) {
+			contentScore += 0.2;
+		}
+		if (getSpecialCharacterRatio(status.getText()) >= 0.3) {
+			contentScore += 0.3;
+		}
+		int spamCount = 0;
+		if (ADB.getSpamWordCount(status) >= 1) {
+			contentScore += 0.4 * spamCount;
 		}
 		
-		return 1;
+		if (contentScore >= 0.6) {
+			return 0;
+		} else {
+			return 1;
+		}
 	}
 	
-	private int getNewLineCount(Status status) {
-		char b = '\n';
-		String str = status.getText();
+	boolean isCreatedInADay(Status status) {
+		Date today = new Date();
+		
+		long todayNum = (today.getTime() / 1000 / 60 / 60 / 24);
+		long statusNum = (status.getUser().getCreatedAt().getTime()
+				/ 1000 / 60 / 60 / 24);
+		
+		if (todayNum < (statusNum + 1)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	private double getSpecialCharacterRatio(String str) {
 		int length = str.length();
 		int count = 0;
 		
+		// Special character count
 		for (int i = 0; i < length; i++) {
-			if (str.charAt(i) == b) {
+			if (((str.charAt(i) >= 0) && (str.charAt(i) <= 47))
+					 || ((str.charAt(i) >= 123) && (str.charAt(i) <= 127))
+					|| ((str.charAt(i) > 57) && (str.charAt(i) < 65))) {
 				count++;
 			}
 		}
 		
-		return count;	
+		return (double)count / (double)length;	
 	}
 	
 	
 	public double getRS(Status status) {
 		// RS calculating function
+		if (status.getUser().getFriendsCount() == 0) {
+			return 0;
+		}
 		long followerCount = status.getUser().getFollowersCount();
 		long followingCount = status.getUser().getFriendsCount();
 		

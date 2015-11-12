@@ -26,7 +26,15 @@ public class Crawler {
 		status.getUser().getFriendsCount()); // ÆÈ·ÎÀ×
 		System.out.println("Description: " +
 		status.getUser().getDescription());
-		System.out.println("==================================");
+		System.out.println("Created at: "
+				+ status.getUser().getCreatedAt());	// °èÁ¤ ¸¸µç ³¯Â¥
+		System.out.println("Status count: "
+				+ status.getUser().getStatusesCount());
+		System.out.println("Post comment: "
+				+ status.getRetweetCount());
+		System.out.println("Favorite Count: "
+				+ status.getFavoriteCount());
+		System.out.println("==================================");	// Æ®À­ °¹¼ö
 	}
 	
 	public void crawl() {
@@ -65,11 +73,10 @@ public class Crawler {
 					if (SC.testTwitterText(status) == 1) {
 						ADB.insertTwitterText(status);	
 					} else if (SC.testTwitterText(status) == 0) {
-						// XXX
 						ADB.addBlackListUser(status);
 						ADB.insertTwitterText(status);
 					} else {}
-					printCrawl(status);
+					//printCrawl(status);
 				}
 
 				@Override

@@ -130,6 +130,8 @@ public class AccessDB {
 		inputTwit.put("Time", getTime());
 		inputTwit.put("ScreenName", status.getUser().getScreenName());
 		inputTwit.put("StatusId", status.getId()); // Post number
+		inputTwit.put("TFValue", null);
+		inputTwit.put("AnalysisResult", null);
 		addedCollection.insert(inputTwit);
 
 		mongoClient.close();
@@ -155,6 +157,7 @@ public class AccessDB {
 			inputUser.put("Time", getTime());
 			inputUser.put("Text", status.getText());
 			inputUser.put("Count", 1);
+			inputUser.put("StatusId", status.getId());
 			addedCollection.insert(inputUser);
 		} else {
 			BasicDBObject findQuery = new BasicDBObject("Screen_Name", status
@@ -165,6 +168,7 @@ public class AccessDB {
 			newInput.put("Time", getTime());
 			newInput.put("Text", status.getText());
 			newInput.put("Count", getBlackListCount(status) + 1);
+			newInput.put("StatusId", status.getId());
 			BasicDBObject updateObject = new BasicDBObject("$set", newInput);
 			addedCollection.update(findQuery, updateObject);
 		}
