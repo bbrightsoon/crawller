@@ -1,14 +1,10 @@
 package Crawler;
-
+import java.util.logging.Logger;
 import java.io.BufferedWriter;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Iterator;
-
-import org.bson.Document;
+import java.util.logging.Level;
 
 import twitter4j.Status;
 
@@ -19,9 +15,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
-import com.mongodb.client.FindIterable;
-
-import java.io.FileOutputStream;
+import com.mongodb.util.JSON;
 
 public class AccessDB {
 	private String text;
@@ -31,11 +25,10 @@ public class AccessDB {
 	private String ip;
 	private int port;
 
-	// private SpammerChecker spammerChecker;
-
 	public AccessDB() {
-		this.dbName = "SNS_Sensitive_Analysis";
-		//this.collectionName = "default";
+		Logger mongoLogger = Logger.getLogger("org.mongodb.driver");
+		mongoLogger.setLevel(Level.SEVERE);
+		this.dbName = "Senti_Meter";
 		this.ip = "127.0.0.1";
 		this.port = 27017;
 	}
@@ -75,7 +68,7 @@ public class AccessDB {
 	}
 
 	public void printTwitterText() {
-		dbName = "SNS_Sensitive_Analysis";
+		dbName = "Senti_Meter";
 		collectionName = "SNS_Data";
 
 		String output;
@@ -89,7 +82,6 @@ public class AccessDB {
 			BufferedWriter bw = new BufferedWriter(new FileWriter(
 					"C:\\Users\\Administrator\\Desktop\\text.txt"));
 			while (cursor.hasNext()) {
-				// output = cursor.next().toString();
 				DBObject saveCursor = cursor.next();
 
 				output = saveCursor.get("Name").toString();
@@ -111,7 +103,7 @@ public class AccessDB {
 	}
 
 	public void insertTwitterText(Status status) {
-		dbName = "SNS_Sensitive_Analysis";
+		dbName = "Senti_Meter";
 		collectionName = "SNS_Data";
 		MongoClient mongoClient = new MongoClient(new ServerAddress(ip, port));
 		DB db = mongoClient.getDB(dbName);
@@ -126,9 +118,9 @@ public class AccessDB {
 		BasicDBObject inputTwit = new BasicDBObject();
 		inputTwit.put("Id", status.getUser().getId()); // User id
 		inputTwit.put("Name", status.getUser().getName()); // User nickname
-		inputTwit.put("Text", status.getText());
+		inputTwit.put("Text", status.getText());	
 		inputTwit.put("Time", getTime());
-		inputTwit.put("ScreenName", status.getUser().getScreenName());
+		inputTwit.put("ScreenName", status.getUser().getScreenName());	// Login id
 		inputTwit.put("StatusId", status.getId()); // Post number
 		inputTwit.put("TFValue", null);
 		inputTwit.put("AnalysisResult", null);
@@ -138,7 +130,7 @@ public class AccessDB {
 	}
 
 	public void addBlackListUser(Status status) {
-		dbName = "SNS_Sensitive_Analysis";
+		dbName = "Senti_Meter";
 		collectionName = "Black_List";
 
 		MongoClient mongoClient = new MongoClient(new ServerAddress(ip, port));
@@ -152,11 +144,11 @@ public class AccessDB {
 
 		if (getBlackListCount(status) == 0) {
 			BasicDBObject inputUser = new BasicDBObject();
-			inputUser.put("Screen_Name", status.getUser().getScreenName());
-			inputUser.put("Name", status.getUser().getName());
-			inputUser.put("Time", getTime());
-			inputUser.put("Text", status.getText());
-			inputUser.put("Count", 1);
+			inputUser.put("Screen_Name", status.getUser().getScreenName());	// Login id
+			inputUser.put("Name", status.getUser().getName());				// Nickname
+			inputUser.put("Time", getTime());								// Time
+			inputUser.put("Text", status.getText());							
+			inputUser.put("Count", 1);										
 			inputUser.put("StatusId", status.getId());
 			addedCollection.insert(inputUser);
 		} else {
@@ -173,11 +165,10 @@ public class AccessDB {
 			addedCollection.update(findQuery, updateObject);
 		}
 		mongoClient.close();
-		// BasicDBObject
 	}
 
 	public int getBlackListCount(Status status) {
-		dbName = "SNS_Sensitive_Analysis";
+		dbName = "Senti_Meter";
 		collectionName = "Black_List";
 
 		MongoClient mongoClient = new MongoClient(new ServerAddress(ip, port));
@@ -200,7 +191,7 @@ public class AccessDB {
 	}
 	
 	public int getSpamWordCount(Status status) {
-		dbName = "SNS_Sensitive_Analysis";
+		dbName = "Senti_Meter";
 		collectionName = "Spam_Word_List";
 		
 		MongoClient mongoClient = new MongoClient(new ServerAddress(ip, port));

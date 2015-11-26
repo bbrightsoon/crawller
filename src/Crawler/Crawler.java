@@ -1,17 +1,16 @@
 package Crawler;
 
-import java.util.List;
 import twitter4j.*;
 import twitter4j.auth.AccessToken;
 import twitter4j.conf.*;
-import twitter4j.Query.*;
+import WordAnalyzer.WordAnalyzer;
 
 public class Crawler {
-	private AccessDB ADB = new AccessDB();
-	private SpammerChecker SC = new SpammerChecker();
+	private AccessDB aDB = new AccessDB();
+	private SpammerChecker sC = new SpammerChecker();
 	
 	public void printDB() {
-		ADB.printTwitterText();
+		aDB.printTwitterText();
 	}
 	
 	private void printCrawl(Status status) {
@@ -24,7 +23,7 @@ public class Crawler {
 		status.getUser().getFollowersCount()); // ÆÈ·Î¿ö
 		System.out.println("Friend: " +
 		status.getUser().getFriendsCount()); // ÆÈ·ÎÀ×
-		System.out.println("Description: " +
+		System.out.println("DesCription: " +
 		status.getUser().getDescription());
 		System.out.println("Created at: "
 				+ status.getUser().getCreatedAt());	// °èÁ¤ ¸¸µç ³¯Â¥
@@ -70,13 +69,16 @@ public class Crawler {
 
 				@Override
 				public void onStatus(Status status) {
-					if (SC.testTwitterText(status) == 1) {
-						ADB.insertTwitterText(status);	
-					} else if (SC.testTwitterText(status) == 0) {
-						ADB.addBlackListUser(status);
-						ADB.insertTwitterText(status);
-					} else {}
-					//printCrawl(status);
+					if (sC.testTwitterText(status) == 1) {
+						aDB.insertTwitterText(status);	
+					} else if (sC.testTwitterText(status) == 0) {
+						aDB.addBlackListUser(status);
+						aDB.insertTwitterText(status);
+					} else {}	
+					WordAnalyzer wA = new WordAnalyzer();
+					wA.analyzer(status.getText());
+					
+					// printCrawl(status);
 				}
 
 				@Override

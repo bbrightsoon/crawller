@@ -9,18 +9,12 @@ import java.util.Date;
 import java.util.regex.*;
 
 public class SpammerChecker {
-	private int twitCnt = 0;
-	private double ratioAv = 0;
-	private double rsRatio = 0;
-	private double hashAv = 0.05;
-	private double urlAv = 0.08;
 	
 	// If return 1, not spammer. If return 0, can be spammer.
 	// If return -1, ignore(bot or useless text).
 	public int testTwitterText(Status status) {
 		//getFRR(status);
 		double contentScore = 0;
-		double behaviorScore = 0;
 		if (status.getUser().getName().contains("º¿") == true) {
 			return -1;
 		}
@@ -51,7 +45,7 @@ public class SpammerChecker {
 			contentScore += 0.3;
 		}
 		int spamCount = 0;
-		if (ADB.getSpamWordCount(status) >= 1) {
+		if ((spamCount = ADB.getSpamWordCount(status)) >= 1) {
 			contentScore += 0.4 * spamCount;
 		}
 		
@@ -109,7 +103,7 @@ public class SpammerChecker {
 		System.out.println("»ç¿ëÀÚ ID : " + status.getUser().getName());
 		long id = status.getUser().getId();
 		long cursor = -1;
-		//-------------------------------------------------
+		
 		AccessToken accessToken = new AccessToken(
 				"3901386613-EUADFhtXzgTQnEdPfzb5c4AuV4pfECjLn11G5Go",
 				"r2QCMx5QqFBJu8GNtDCTL7pYlc7wsDALwOjOoS1eZTZmo");
@@ -131,7 +125,6 @@ public class SpammerChecker {
 			do {
 				for (long i : friendsIDs.getIDs()) {
 					System.out.println("followers ID #" + i);
-//					System.out.println(twitter.showUser(i).getName());
 				}
 			} while (friendsIDs.hasNext());
 		} catch (TwitterException e) {
